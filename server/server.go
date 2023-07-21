@@ -72,7 +72,7 @@ func ListenAndServe(listener net.Listener, handler tcp.Handler, closeChan <-chan
 			defer func() { // 防止Handle时出现panic时执行不到waitDone.Done
 				waitDone.Done()
 			}()
-			handler.Handle(ctx, conn)
+			handler.Handle(ctx, conn) // 具体方法在echo.go中实现
 		}()
 	}
 	waitDone.Wait()
