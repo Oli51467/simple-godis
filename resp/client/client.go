@@ -1,4 +1,4 @@
-package session
+package client
 
 import (
 	"net"
@@ -7,21 +7,28 @@ import (
 	"time"
 )
 
-// Session 抽象了客户端的连接
-type Session struct {
+// Client 抽象了客户端的连接
+type Client struct {
 	conn       net.Conn
 	waiting    wait.Wait
 	mutex      sync.Mutex
 	selectedDB int
 }
 
+// NewClient 指定conn新建一个客户端的连接
+func NewClient(conn net.Conn) *Client {
+	return &Client{
+		conn: conn,
+	}
+}
+
 // RemoteAddr 获取连接会话的远程地址
-func (session *Session) RemoteAddr() net.Addr {
+func (session *Client) RemoteAddr() net.Addr {
 	return session.conn.RemoteAddr()
 }
 
 // Close 实现io.Close
-func (session *Session) Close() error {
+func (session *Client) Close() error {
 	// 关闭连接时需要先等待一次读写完成
 	session.waiting.WaitWithTimeout(10 * time.Second)
 	_ = session.conn.Close()
@@ -29,7 +36,7 @@ func (session *Session) Close() error {
 }
 
 // Write 给客户端发送数据
-func (session *Session) Write(bytes []byte) error {
+func (session *Client) Write(bytes []byte) error {
 	if len(bytes) == 0 {
 		return nil
 	}
@@ -45,11 +52,11 @@ func (session *Session) Write(bytes []byte) error {
 }
 
 // GetDBIndex 返回客户端指定的数据库
-func (session *Session) GetDBIndex() int {
+func (session *Client) GetDBIndex() int {
 	return session.selectedDB
 }
 
 // SelectDB 修改客户端连接的数据库
-func (session *Session) SelectDB(dbIndex int) {
+func (session *Client) SelectDB(dbIndex int) {
 	session.selectedDB = dbIndex
 }

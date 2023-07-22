@@ -5,6 +5,7 @@ import (
 	"os"
 	"simple-godis/config"
 	"simple-godis/lib/logger"
+	"simple-godis/resp/handler"
 	"simple-godis/server"
 )
 
@@ -13,7 +14,7 @@ const ConfigFile string = "redis.conf"
 // 没有配置文件时的默认配置
 var defaultProperties = &config.ServerProperties{
 	Bind: "0.0.0.0",
-	Port: 6379,
+	Port: 6378,
 }
 
 // 判断文件是否存在
@@ -40,7 +41,7 @@ func main() {
 		Address: fmt.Sprintf("%s:%d",
 			config.Properties.Bind,
 			config.Properties.Port),
-	}, server.MakeHandler())
+	}, handler.MakeRespHandler())
 	if err != nil {
 		logger.Error(err)
 	}

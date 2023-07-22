@@ -8,9 +8,15 @@ var syntaxErrBytes = []byte("-Err syntax error\r\n")
 var wrongTypeErrBytes = []byte("-Wrong type operation against a key holding the wrong kind of value\r\n")
 
 var theSyntaxErrReply = &SyntaxErrReply{}
+var theUnknownErrReply = &UnknownErrReply{}
 
 // UnknownErrReply 一类未知错误的抽象 实现了reply.ErrorReply接口
 type UnknownErrReply struct {
+}
+
+// MakeUnknownErrReply UnknownErrReply的构造方法
+func MakeUnknownErrReply() *UnknownErrReply {
+	return theUnknownErrReply
 }
 
 // Error UnknownErrReply实现reply.ErrorReply接口的Error方法
@@ -38,7 +44,7 @@ func (err *ArgsNumErrReply) ToBytes() []byte {
 	return []byte("-ERR wrong number of arguments for '" + err.Cmd + "' command\r\n")
 }
 
-// MakeArgNumErrReply ArgNumErrReply的制作方法
+// MakeArgNumErrReply ArgNumErrReply的构造方法
 func MakeArgNumErrReply(cmd string) *ArgsNumErrReply {
 	return &ArgsNumErrReply{
 		Cmd: cmd,
@@ -48,7 +54,7 @@ func MakeArgNumErrReply(cmd string) *ArgsNumErrReply {
 // SyntaxErrReply 语法错误的抽象 实现了reply.ErrorReply接口
 type SyntaxErrReply struct{}
 
-// MakeSyntaxErrReply SyntaxErrReply的制作方法
+// MakeSyntaxErrReply SyntaxErrReply的构造方法
 func MakeSyntaxErrReply() *SyntaxErrReply {
 	return theSyntaxErrReply
 }

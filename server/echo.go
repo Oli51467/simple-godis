@@ -53,7 +53,7 @@ func (handler *EchoHandler) Handle(ctx context.Context, conn net.Conn) {
 	handler.activeConn.Store(client, struct{}{})
 
 	reader := bufio.NewReader(conn)
-	// 不断读取Client传递过来的信心
+	// 不断读取Client传递过来的信息
 	for {
 		msg, err := reader.ReadString('\n')
 		if err != nil {
