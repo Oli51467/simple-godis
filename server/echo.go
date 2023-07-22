@@ -58,7 +58,7 @@ func (handler *EchoHandler) Handle(ctx context.Context, conn net.Conn) {
 		msg, err := reader.ReadString('\n')
 		if err != nil {
 			if err == io.EOF {
-				logger.Info("Connection close by client probably because of EOF")
+				logger.Info("Connection closed by client probably because of EOF")
 				handler.activeConn.Delete(client)
 			} else {
 				logger.Warn(err)

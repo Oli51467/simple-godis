@@ -9,7 +9,6 @@ import (
 /*
 承载一般的回复体
 */
-
 var (
 	nullBulkReplyBytes = []byte("$-1")
 	CRLF               = "\r\n" // CRLF is the line separator of redis serialization protocol
@@ -83,8 +82,8 @@ func MakeStatusReply(status string) *StatusReply {
 }
 
 // ToBytes 实现reply.Reply接口
-func (r *StatusReply) ToBytes() []byte {
-	return []byte("+" + r.Status + CRLF)
+func (reply *StatusReply) ToBytes() []byte {
+	return []byte("+" + reply.Status + CRLF)
 }
 
 // IntReply resp通信协议的状态回复体，可承载int64
@@ -100,8 +99,8 @@ func MakeIntReply(code int64) *IntReply {
 }
 
 // ToBytes 实现reply.Reply接口
-func (r *IntReply) ToBytes() []byte {
-	return []byte(":" + strconv.FormatInt(r.Code, 10) + CRLF)
+func (reply *IntReply) ToBytes() []byte {
+	return []byte(":" + strconv.FormatInt(reply.Code, 10) + CRLF)
 }
 
 // StandardErrReply 自定义的resp协议的异常状态回复
@@ -110,17 +109,17 @@ type StandardErrReply struct {
 }
 
 // ToBytes 实现reply.Reply接口
-func (r *StandardErrReply) ToBytes() []byte {
-	return []byte("-" + r.Status + CRLF)
+func (reply *StandardErrReply) ToBytes() []byte {
+	return []byte("-" + reply.Status + CRLF)
 }
 
 // Error 实现reply.Reply接口
-func (r *StandardErrReply) Error() string {
-	return r.Status
+func (reply *StandardErrReply) Error() string {
+	return reply.Status
 }
 
-// MakeStandardErrReply 对外提供的StandardErrReply构造方法
-func MakeStandardErrReply(status string) *StandardErrReply {
+// MakeErrReply 对外提供的StandardErrReply构造方法
+func MakeErrReply(status string) *StandardErrReply {
 	return &StandardErrReply{
 		Status: status,
 	}
