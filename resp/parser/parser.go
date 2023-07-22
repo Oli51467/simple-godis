@@ -236,6 +236,17 @@ func parseSingleLineReply(msg []byte) (resp.Reply, error) {
 			return nil, errors.New("Protocol error " + string(msg))
 		}
 		result = reply.MakeIntReply(val)
+	default:
+		// 当作文本协议解析
+		strs := strings.Split(str, " ")
+		args := make([][]byte, len(strs))
+		for i, s := range strs {
+			args[i] = []byte(s)
+			if len(s) == 0 {
+				return nil, errors.New("Protocol error " + string(msg))
+			}
+		}
+		result = reply.MakeMultiBulkReply(args)
 	}
 	return result, nil
 }
