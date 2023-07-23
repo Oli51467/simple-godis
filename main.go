@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	_ "simple-godis/command"
 	"simple-godis/config"
 	"simple-godis/lib/logger"
 	"simple-godis/resp/handler"

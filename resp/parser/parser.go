@@ -225,7 +225,7 @@ func parseBulkHeader(msg []byte, state *readState) error {
 func parseSingleLineReply(msg []byte) (resp.Reply, error) {
 	str := strings.TrimSuffix(string(msg), "\r\n")
 	var result resp.Reply
-	switch str[0] {
+	switch msg[0] {
 	case '+':
 		result = reply.MakeStatusReply(str[1:])
 	case '-':
@@ -239,12 +239,12 @@ func parseSingleLineReply(msg []byte) (resp.Reply, error) {
 	default:
 		// 当作文本协议解析
 		strs := strings.Split(str, " ")
+		if len(strs) == 0 {
+			return nil, errors.New("Protocol error " + string(msg))
+		}
 		args := make([][]byte, len(strs))
 		for i, s := range strs {
 			strings.TrimSpace(s)
-			if len(s) == 0 {
-				return nil, errors.New("Protocol error " + string(msg))
-			}
 			args[i] = []byte(s)
 		}
 		result = reply.MakeMultiBulkReply(args)
