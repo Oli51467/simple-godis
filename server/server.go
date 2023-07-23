@@ -66,7 +66,7 @@ func ListenAndServe(listener net.Listener, handler tcp.Handler, closeChan <-chan
 		if err != nil { // 接收连接错误时等待正在服务的客户端退出
 			break
 		}
-		logger.Info("Accept Connection")
+		logger.Info("Accept connection")
 		waitDone.Add(1)
 		go func() { // 一个协程监听一个连接 处理这个新的连接需要新建一个协程
 			defer func() { // 防止Handle时出现panic时执行不到waitDone.Done

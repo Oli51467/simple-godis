@@ -11,7 +11,7 @@ import (
 */
 var (
 	nullBulkReplyBytes = []byte("$-1")
-	CRLF               = "\r\n" // CRLF is the line separator of redis serialization protocol
+	CRLF               = "\r\n" // CRLF resp协议的换行符
 )
 
 // ErrorReply Redis通信异常回复接口

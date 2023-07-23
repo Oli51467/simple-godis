@@ -35,33 +35,26 @@ func (handler *RespHandler) Handle(ctx context.Context, conn net.Conn) {
 	if handler.closing.Get() {
 		_ = conn.Close()
 	}
-	newClient := client.NewClient(conn)
-	handler.activeConn.Store(newClient, struct{}{})
-	// 解析器不断监听管道的数据并将处理后的数据传递到channel中
-	ch := parser.ParseStream(conn)
-	// ch在被关闭之前会一直循环
-	for payload := range ch {
-		// 如果监听的指令存在错误
-		if payload.Err != nil {
-			// 客户端关闭连接
+	newClient := client.NewClient(conn)             // 使用conn新建一个客户端连接
+	handler.activeConn.Store(newClient, struct{}{}) // 将连接存储
+	ch := parser.ParseStream(conn)                  // 解析器不断监听管道的数据并将处理后的数据传递到channel中
+	for payload := range ch {                       // ch在被关闭之前会一直循环输出
+		if payload.Err != nil { // 如果监听的指令存在错误
 			if payload.Err == io.EOF || payload.Err == io.ErrUnexpectedEOF ||
 				strings.Contains(payload.Err.Error(), "use of closed network connection") {
-				handler.closeClient(newClient)
+				handler.closeClient(newClient) // 客户端关闭连接
 				return
 			} else { // 协议解析错误
 				errReply := reply.MakeErrReply(payload.Err.Error())
-				err := newClient.Write(errReply.ToBytes())
-				// 回复用户出错时出错
-				if err != nil {
+				err := newClient.Write(errReply.ToBytes()) // 将错误写回客户端
+				if err != nil {                            // 回复用户出错时出错
 					handler.closeClient(newClient)
 					return
 				}
-				// 成功回复用户错误
 				continue
 			}
-		} else {
-			// 1.用户发送的指令为空
-			if payload.Data == nil {
+		} else { // 指令不存在错误
+			if payload.Data == nil { // 用户发送的指令为空
 				logger.Info("empty command received")
 				continue
 			}
@@ -70,24 +63,20 @@ func (handler *RespHandler) Handle(ctx context.Context, conn net.Conn) {
 			if !ok {
 				continue
 			}
-			// 3.db执行指令
+			// 3.转换成功，db执行指令
 			execResult := handler.db.Exec(newClient, command.Msg)
 			if execResult != nil {
 				err := newClient.Write(execResult.ToBytes())
-				// 回复用户出错时出错
-				if err != nil {
+				if err != nil { // 回复用户出错时出错
 					handler.closeClient(newClient)
 					return
 				}
-				continue
 			} else {
 				err := newClient.Write(reply.MakeUnknownErrReply().ToBytes())
-				// 回复用户出错时出错
-				if err != nil {
+				if err != nil { // 回复用户出错时出错
 					handler.closeClient(newClient)
 					return
 				}
-				continue
 			}
 		}
 	}
@@ -98,12 +87,12 @@ func (handler *RespHandler) closeClient(client *client.Client) {
 	logger.Info("Connection closed: " + client.RemoteAddr().String())
 	_ = client.Close()
 	handler.db.AfterClientClose(client) // 关闭后的处理
-	handler.activeConn.Delete(client)   // 移除连接
+	handler.activeConn.Delete(client)   // 连接池移除连接
 }
 
 // Close 实现handler.Close方法
 func (handler *RespHandler) Close() error {
-	logger.Info("handler shutting down...")
+	logger.Info("Handler shutting down...")
 	handler.closing.Set(true)
 
 	handler.activeConn.Range(

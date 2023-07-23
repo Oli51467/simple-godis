@@ -241,10 +241,11 @@ func parseSingleLineReply(msg []byte) (resp.Reply, error) {
 		strs := strings.Split(str, " ")
 		args := make([][]byte, len(strs))
 		for i, s := range strs {
-			args[i] = []byte(s)
+			strings.TrimSpace(s)
 			if len(s) == 0 {
 				return nil, errors.New("Protocol error " + string(msg))
 			}
+			args[i] = []byte(s)
 		}
 		result = reply.MakeMultiBulkReply(args)
 	}
