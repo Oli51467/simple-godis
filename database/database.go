@@ -14,7 +14,7 @@ type CmdLine = [][]byte
 // Database 一个子数据库 实现了smap.Map接口
 type Database struct {
 	index int
-	data  smap.Map
+	Data  smap.Map
 }
 
 func (db *Database) Exec(conn resp.Connection, cmd dbInterface.CmdLine) resp.Reply {
@@ -35,7 +35,7 @@ type ExecuteCommand func(db *Database, args [][]byte) resp.Reply
 // MakeDatabase 构建一个数据库
 func MakeDatabase() *Database {
 	db := &Database{
-		data: smap.MakeSyncMap(),
+		Data: smap.MakeSyncMap(),
 	}
 	return db
 }
@@ -67,7 +67,7 @@ func validateArity(arity int, commandArgs [][]byte) bool {
 
 // GetEntity 从该索引的数据库中拿一个key对应的DataEntity return: DataEntity, 是否拿到
 func (db *Database) GetEntity(key string) (*dbInterface.DataEntity, bool) {
-	raw, ok := db.data.Get(key) // Get返回的是空接口 需要转换为DataEntity
+	raw, ok := db.Data.Get(key) // Get返回的是空接口 需要转换为DataEntity
 	if !ok {
 		return nil, false
 	}
@@ -77,36 +77,36 @@ func (db *Database) GetEntity(key string) (*dbInterface.DataEntity, bool) {
 
 // PutEntity 从该索引的数据库中放入一个key对应的DataEntity
 func (db *Database) PutEntity(key string, entity *dbInterface.DataEntity) int {
-	return db.data.Put(key, entity)
+	return db.Data.Put(key, entity)
 }
 
 // PutEntityIfExists 如果key在该索引对应的数据库中存在，
 // 从该索引的数据库中放入一个key对应的DataEntity
 func (db *Database) PutEntityIfExists(key string, entity *dbInterface.DataEntity) int {
-	return db.data.PutIfExists(key, entity)
+	return db.Data.PutIfExists(key, entity)
 }
 
 // PutEntityIfAbsent 如果key在该索引对应的数据库中不存在，
 // 从该索引的数据库中放入一个key对应的DataEntity
 func (db *Database) PutEntityIfAbsent(key string, entity *dbInterface.DataEntity) int {
-	return db.data.PutIfAbsent(key, entity)
+	return db.Data.PutIfAbsent(key, entity)
 }
 
 // RemoveEntity 从该索引的数据库中删除一个key对应的DataEntity
 func (db *Database) RemoveEntity(key string) {
-	db.data.Remove(key)
+	db.Data.Remove(key)
 }
 
 // RemoveEntities 从该索引的数据库中删除一个或多个key对应的DataEntity
 func (db *Database) RemoveEntities(keys ...string) (deleted int) {
 	deleted = 0
 	for _, key := range keys {
-		deleted += db.data.Remove(key)
+		deleted += db.Data.Remove(key)
 	}
 	return deleted
 }
 
 // FlushKeys 从该索引的数据库中删除所有key
 func (db *Database) FlushKeys() {
-	db.data.Clear()
+	db.Data.Clear()
 }
