@@ -10,11 +10,12 @@ type CmdLine = [][]byte
 // Close关闭数据库连接
 // AfterClientClose 连接关闭后的处理
 type Database interface {
-	Exec(client resp.Connection, cmd [][]byte) resp.Reply
+	Exec(client resp.Connection, cmd CmdLine) resp.Reply
 	Close()
 	AfterClientClose(conn resp.Connection)
 }
 
+// DataEntity 抽象了Redis中所有的数据结构
 type DataEntity struct {
 	Data interface{}
 }
