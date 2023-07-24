@@ -4,7 +4,6 @@ import (
 	"simple-godis/datastructure/smap"
 	dbInterface "simple-godis/interface/database"
 	"simple-godis/interface/resp"
-	"simple-godis/lib/logger"
 	"simple-godis/resp/reply"
 	"strings"
 )
@@ -15,18 +14,6 @@ type CmdLine = [][]byte
 type Database struct {
 	index int
 	Data  smap.Map
-}
-
-func (db *Database) Exec(conn resp.Connection, cmd dbInterface.CmdLine) resp.Reply {
-	return db.Execute(conn, cmd)
-}
-
-func (db *Database) Close() {
-	logger.Info("Real Database closed")
-}
-
-func (db *Database) AfterClientClose(conn resp.Connection) {
-	logger.Info("After client close, free some memory")
 }
 
 // ExecuteCommand 所有redis指令都要使用该函数执行
