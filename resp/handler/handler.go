@@ -66,7 +66,7 @@ func (handler *RespHandler) Handle(ctx context.Context, conn net.Conn) {
 			// 3.转换成功，db执行指令
 			execResult := handler.db.Exec(newClient, command.Msg)
 			if execResult != nil {
-				err := newClient.Write(execResult.ToBytes())
+				err := newClient.Write(execResult.ToClient())
 				if err != nil { // 回复用户出错时出错
 					handler.closeClient(newClient)
 					return

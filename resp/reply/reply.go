@@ -10,7 +10,7 @@ import (
 承载一般的回复体
 */
 var (
-	nullBulkReplyBytes = []byte("$-1")
+	nullBulkReplyBytes = []byte("nil")
 	CRLF               = "\r\n" // CRLF resp协议的换行符
 )
 
@@ -41,6 +41,14 @@ func (reply *BulkReply) ToBytes() []byte {
 	return []byte("$" + strconv.Itoa(len(reply.Msg)) + CRLF + string(reply.Msg) + CRLF)
 }
 
+func (reply *BulkReply) ToClient() []byte {
+	// 判断传递的信息长度是否为空
+	if len(reply.Msg) == 0 {
+		return nullBulkReplyBytes
+	}
+	return []byte(string(reply.Msg) + CRLF)
+}
+
 // MultiBulkReply 多段字符串通信 将不符合resp通信协议的字符串数组转化为符合通信协议的字节数组
 type MultiBulkReply struct {
 	Msg [][]byte
@@ -62,6 +70,21 @@ func (reply *MultiBulkReply) ToBytes() []byte {
 	return buf.Bytes()
 }
 
+func (reply *MultiBulkReply) ToClient() []byte {
+	msgLen := len(reply.Msg)
+	var buf bytes.Buffer // 字符串拼接转bytes
+	buf.WriteString(strconv.Itoa(msgLen) + CRLF)
+	// 遍历每一个string
+	for _, lineMsg := range reply.Msg {
+		if lineMsg == nil {
+			buf.WriteString(string(nullBulkReplyBytes) + CRLF)
+		} else {
+			buf.WriteString(string(lineMsg) + CRLF)
+		}
+	}
+	return buf.Bytes()
+}
+
 // MakeMultiBulkReply 对外提供的MultiBulkReply构造方法
 func MakeMultiBulkReply(msg [][]byte) *MultiBulkReply {
 	return &MultiBulkReply{
@@ -72,6 +95,10 @@ func MakeMultiBulkReply(msg [][]byte) *MultiBulkReply {
 // StatusReply resp通信协议的状态回复体
 type StatusReply struct {
 	Status string
+}
+
+func (reply *StatusReply) ToClient() []byte {
+	return []byte(reply.Status + CRLF)
 }
 
 // MakeStatusReply 对外提供的StatusReply构造方法
@@ -103,6 +130,10 @@ func (reply *IntReply) ToBytes() []byte {
 	return []byte(":" + strconv.FormatInt(reply.Code, 10) + CRLF)
 }
 
+func (reply *IntReply) ToClient() []byte {
+	return []byte(strconv.FormatInt(reply.Code, 10) + CRLF)
+}
+
 // StandardErrReply 自定义的resp协议的异常状态回复
 type StandardErrReply struct {
 	Status string
@@ -111,6 +142,10 @@ type StandardErrReply struct {
 // ToBytes 实现reply.Reply接口
 func (reply *StandardErrReply) ToBytes() []byte {
 	return []byte("-" + reply.Status + CRLF)
+}
+
+func (reply *StandardErrReply) ToClient() []byte {
+	return []byte(reply.Status + CRLF)
 }
 
 // Error 实现reply.Reply接口

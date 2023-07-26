@@ -29,6 +29,10 @@ func (err UnknownErrReply) ToBytes() []byte {
 	return unknownErrBytes
 }
 
+func (err *UnknownErrReply) ToClient() []byte {
+	return unknownErrBytes
+}
+
 // ArgsNumErrReply Redis指令参数错误的抽象 实现了reply.ErrorReply接口
 type ArgsNumErrReply struct {
 	Cmd string
@@ -41,6 +45,10 @@ func (err *ArgsNumErrReply) Error() string {
 
 // ToBytes ArgsNumErrReply实现reply.ErrorReply接口的ToBytes方法
 func (err *ArgsNumErrReply) ToBytes() []byte {
+	return []byte("-ERR wrong number of arguments for '" + err.Cmd + "' command\r\n")
+}
+
+func (err *ArgsNumErrReply) ToClient() []byte {
 	return []byte("-ERR wrong number of arguments for '" + err.Cmd + "' command\r\n")
 }
 

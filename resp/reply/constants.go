@@ -3,11 +3,11 @@ package reply
 /*
 记录一些固定的回复格式或内容
 */
-var pongBytes = []byte("+PONG\r\n") // pong的字节数组
-var okBytes = []byte("+OK\r\n")
-var nullBulkBytes = []byte("$-1\r\n")      // nil 空字符串回复
-var emptyMultiBulkBytes = []byte("*0\r\n") // 空数组回复
-var noBytes = []byte("")                   // 空回复
+var pongBytes = []byte("PONG\r\n") // pong的字节数组
+var okBytes = []byte("OK\r\n")
+var nullBulkBytes = []byte("nil\r\n")     // nil 空字符串回复
+var emptyMultiBulkBytes = []byte("0\r\n") // 空数组回复
+var noBytes = []byte("")                  // 空回复
 
 /*
 本地持有一些固定回复 节约内存
@@ -32,6 +32,10 @@ func (reply *PongReply) ToBytes() []byte {
 	return pongBytes
 }
 
+func (reply *PongReply) ToClient() []byte {
+	return pongBytes
+}
+
 // OkReply 回复客户端OK
 type OkReply struct {
 }
@@ -43,6 +47,10 @@ func MakeOkReply() *OkReply {
 
 // ToBytes OkReply实现Reply接口的ToBytes方法
 func (reply *OkReply) ToBytes() []byte {
+	return okBytes
+}
+
+func (reply *OkReply) ToClient() []byte {
 	return okBytes
 }
 
@@ -60,6 +68,10 @@ func (reply *NullBulkReply) ToBytes() []byte {
 	return nullBulkBytes
 }
 
+func (reply *NullBulkReply) ToClient() []byte {
+	return nullBulkBytes
+}
+
 // EmptyMultiBulkReply 空数组回复
 type EmptyMultiBulkReply struct {
 }
@@ -71,6 +83,10 @@ func MakeEmptyMultiBulkReply() *EmptyMultiBulkReply {
 
 // ToBytes EmptyMultiBulkReply实现Reply接口的ToBytes方法
 func (reply *EmptyMultiBulkReply) ToBytes() []byte {
+	return emptyMultiBulkBytes
+}
+
+func (reply *EmptyMultiBulkReply) ToClient() []byte {
 	return emptyMultiBulkBytes
 }
 
