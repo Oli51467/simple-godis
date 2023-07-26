@@ -12,8 +12,9 @@ type CmdLine = [][]byte
 
 // Database 一个子数据库 实现了smap.Map接口
 type Database struct {
-	index int
-	Data  smap.Map
+	index  int
+	Data   smap.Map
+	AddAof func(line CmdLine) // 分数据库落盘不需要知道落盘处理器的全部细节，只需要一个方法
 }
 
 // ExecuteCommand 所有redis指令都要使用该函数执行
@@ -22,7 +23,8 @@ type ExecuteCommand func(db *Database, args [][]byte) resp.Reply
 // MakeDatabase 构建一个数据库
 func MakeDatabase() *Database {
 	db := &Database{
-		Data: smap.MakeSyncMap(),
+		Data:   smap.MakeSyncMap(),
+		AddAof: func(line CmdLine) {},
 	}
 	return db
 }

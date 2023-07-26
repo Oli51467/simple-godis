@@ -1,6 +1,7 @@
 package database
 
 import (
+	"simple-godis/aof"
 	"simple-godis/config"
 	"simple-godis/interface/resp"
 	"simple-godis/lib/logger"
@@ -9,7 +10,12 @@ import (
 	"strings"
 )
 
-// NewDatabases 初始化数据库和分库
+type Databases struct {
+	dbSet      []*Database
+	aofHandler *aof.AofHandler
+}
+
+// NewDatabases 初始化数据库和分库以及处理指令文件记录的处理器
 func NewDatabases() *Databases {
 	databases := &Databases{}
 	if config.Properties.Databases == 0 {
@@ -21,11 +27,22 @@ func NewDatabases() *Databases {
 		database.index = i
 		databases.dbSet[i] = database
 	}
+	// 初始化AofHandler
+	if config.Properties.AppendOnly {
+		aofHandler, err := aof.NewAofHandler(databases)
+		if err != nil {
+			panic(err)
+		}
+		databases.aofHandler = aofHandler
+		// 将落盘方法逐个添加到每个分数据库中
+		for _, db := range databases.dbSet {
+			finalDb := db
+			finalDb.AddAof = func(line CmdLine) {
+				databases.aofHandler.AddAof(finalDb.index, line)
+			}
+		}
+	}
 	return databases
-}
-
-type Databases struct {
-	dbSet []*Database
 }
 
 func (db *Databases) Exec(client resp.Connection, args CmdLine) resp.Reply {

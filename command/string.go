@@ -4,6 +4,7 @@ import (
 	"simple-godis/database"
 	dbInterface "simple-godis/interface/database"
 	"simple-godis/interface/resp"
+	"simple-godis/lib/utils"
 	"simple-godis/resp/reply"
 )
 
@@ -38,6 +39,7 @@ func executeSet(db *database.Database, args [][]byte) resp.Reply {
 		Data: val,
 	}
 	db.PutEntity(key, entity)
+	db.AddAof(utils.ToCmdLine2("set", args...))
 	return reply.MakeOkReply()
 }
 
@@ -49,6 +51,7 @@ func executeSetnx(db *database.Database, args [][]byte) resp.Reply {
 		Data: val,
 	}
 	result := db.PutEntityIfAbsent(key, entity)
+	db.AddAof(utils.ToCmdLine2("setnx", args...))
 	return reply.MakeIntReply(int64(result))
 }
 
@@ -63,6 +66,7 @@ func executeGetAndSet(db *database.Database, args [][]byte) resp.Reply {
 	if !exist {
 		return reply.MakeNullBulkReply()
 	}
+	db.AddAof(utils.ToCmdLine2("getset", args...))
 	return reply.MakeBulkReply(entity.Data.([]byte))
 }
 

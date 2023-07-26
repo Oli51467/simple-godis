@@ -3,6 +3,7 @@ package command
 import (
 	"simple-godis/database"
 	"simple-godis/interface/resp"
+	"simple-godis/lib/utils"
 	"simple-godis/lib/wildcard"
 	"simple-godis/resp/reply"
 )
@@ -28,6 +29,9 @@ func executeDel(db *database.Database, args [][]byte) resp.Reply {
 		keys[i] = string(v)
 	}
 	deleted := db.RemoveEntities(keys...)
+	if deleted > 0 {
+		db.AddAof(utils.ToCmdLine2("del", args...))
+	}
 	return reply.MakeIntReply(int64(deleted))
 }
 
@@ -47,6 +51,7 @@ func executeExists(db *database.Database, args [][]byte) resp.Reply {
 // executeFlush 在指定数据库中删除所有key
 func executeFlush(db *database.Database, args [][]byte) resp.Reply {
 	db.FlushKeys()
+	db.AddAof(utils.ToCmdLine2("flush", args...))
 	return reply.MakeOkReply()
 }
 
@@ -76,6 +81,7 @@ func executeRename(db *database.Database, args [][]byte) resp.Reply {
 	}
 	db.PutEntity(destKey, entity)
 	db.RemoveEntity(srcKey)
+	db.AddAof(utils.ToCmdLine2("rename", args...))
 	return reply.MakeOkReply()
 }
 
@@ -93,6 +99,7 @@ func executeRenameNx(db *database.Database, args [][]byte) resp.Reply {
 	}
 	db.PutEntity(destKey, entity)
 	db.RemoveEntity(srcKey)
+	db.AddAof(utils.ToCmdLine2("renamenx", args...))
 	return reply.MakeIntReply(1)
 }
 
