@@ -4,6 +4,7 @@ import (
 	"simple-godis/datastructure/smap"
 	dbInterface "simple-godis/interface/database"
 	"simple-godis/interface/resp"
+	"simple-godis/lib/logger"
 	"simple-godis/resp/reply"
 	"strings"
 )
@@ -34,6 +35,14 @@ func (db *Database) Execute(conn resp.Connection, cmdLine CmdLine) resp.Reply {
 	// 统一将指令转为小写
 	cmdName := strings.ToLower(string(cmdLine[0]))
 	cmd, ok := commandTable[cmdName]
+	if cmdName == "exit" {
+		err := conn.Close()
+		if err != nil {
+			logger.Error(err)
+			return reply.MakeErrReply("Exit Error")
+		}
+		return reply.MakeOkReply()
+	}
 	if !ok { // 不存在该指令集
 		return reply.MakeErrReply("ERR unknown command " + cmdName)
 	}
