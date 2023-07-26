@@ -1,11 +1,14 @@
 package aof
 
 import (
+	"io"
 	"os"
 	"simple-godis/config"
 	dbInterface "simple-godis/interface/database"
 	"simple-godis/lib/logger"
 	"simple-godis/lib/utils"
+	"simple-godis/resp/client"
+	"simple-godis/resp/parser"
 	"simple-godis/resp/reply"
 	"strconv"
 )
@@ -87,6 +90,43 @@ func (handler *AofHandler) handleAof() {
 	}
 }
 
+// loadAof 在服务启动时将磁盘中的resp格式的指令当作用户发来的指令恢复
 func (handler *AofHandler) loadAof() {
-
+	file, err := os.Open(handler.aofFilename)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+	defer func() {
+		closeErr := file.Close()
+		if closeErr != nil {
+			logger.Error("Close AofFile Failed", err)
+		}
+	}()
+	// 使用解析器解析Aof文件的历史指令 并将解析结果吐到ch管道里 再遍历管道还原指令
+	ch := parser.ParseStream(file)
+	dummyClient := &client.Client{}
+	for payload := range ch {
+		if payload.Err != nil {
+			if payload.Err == io.EOF {
+				break
+			}
+			logger.Error(payload.Err)
+			continue
+		}
+		if payload.Data == nil {
+			logger.Error("Empty payload")
+			continue
+		}
+		res, ok := payload.Data.(*reply.MultiBulkReply)
+		if !ok {
+			logger.Error("Aof order need multi bulkReplyFormat", payload.Data)
+			continue
+		}
+		// 将取到的指令送到数据库执行
+		executeReply := handler.database.Exec(dummyClient, res.Msg)
+		if reply.IsErrorReply(executeReply) {
+			logger.Error(executeReply)
+		}
+	}
 }
