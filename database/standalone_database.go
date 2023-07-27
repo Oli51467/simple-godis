@@ -68,7 +68,7 @@ func (db *StandaloneDatabase) Close() {
 }
 
 func (db *StandaloneDatabase) AfterClientClose(conn resp.Connection) {
-	logger.Info("After client close, free some memory")
+
 }
 
 // executeSelect 执行选择数据库指令

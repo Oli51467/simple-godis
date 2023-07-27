@@ -18,6 +18,7 @@ var (
 type ErrorReply interface {
 	Error() string
 	ToBytes() []byte
+	ToClient() []byte
 }
 
 // BulkReply 普通字符串通信 将不符合resp通信协议的字符串转化为符合通信协议的字节数组

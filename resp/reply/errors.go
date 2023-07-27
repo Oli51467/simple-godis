@@ -72,6 +72,10 @@ func (err *SyntaxErrReply) ToBytes() []byte {
 	return syntaxErrBytes
 }
 
+func (err *SyntaxErrReply) ToClient() []byte {
+	return syntaxErrBytes
+}
+
 // Error SyntaxErrReply实现reply.ErrorReply接口的Error方法
 func (err *SyntaxErrReply) Error() string {
 	return "Err syntax error"
@@ -85,6 +89,10 @@ func (err *WrongTypeErrReply) ToBytes() []byte {
 	return wrongTypeErrBytes
 }
 
+func (err *WrongTypeErrReply) ToClient() []byte {
+	return wrongTypeErrBytes
+}
+
 // Error WrongTypeErrReply实现reply.ErrorReply接口的Error方法
 func (err *WrongTypeErrReply) Error() string {
 	return "Wrong type operation against a key holding the wrong kind of value"
@@ -93,6 +101,10 @@ func (err *WrongTypeErrReply) Error() string {
 // ProtocolErrReply 接口协议错误的抽象 实现了reply.ErrorReply接口
 type ProtocolErrReply struct {
 	Msg string
+}
+
+func (err *ProtocolErrReply) ToClient() []byte {
+	return []byte("ERR Protocol error: '" + err.Msg + "'\r\n")
 }
 
 // ToBytes ProtocolErrReply实现reply.ErrorReply接口的ToBytes方法
