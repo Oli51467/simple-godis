@@ -23,6 +23,11 @@ func init() {
 // executeGet 执行获取一个键对应的value
 func executeGet(db *database.DB, args [][]byte) resp.Reply {
 	key := string(args[0])
+	set, _ := db.GetAsSet(key)
+	// 判断要取的key是不是一个集合 如果是就改为查询集合内的所有元素
+	if set != nil {
+		return executeSMembers(db, args)
+	}
 	entity, exists := db.GetEntity(key)
 	if !exists {
 		return reply.MakeNullBulkReply()

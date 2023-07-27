@@ -120,7 +120,6 @@ func (handler *AofHandler) loadAof() {
 		}
 		res, ok := payload.Data.(*reply.MultiBulkReply)
 		if !ok {
-			logger.Error("Aof order need multi bulkReplyFormat", payload.Data)
 			continue
 		}
 		// 将取到的指令送到数据库执行
