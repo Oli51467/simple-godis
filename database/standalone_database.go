@@ -10,20 +10,20 @@ import (
 	"strings"
 )
 
-type Databases struct {
-	dbSet      []*Database
+type StandaloneDatabase struct {
+	dbSet      []*DB
 	aofHandler *aof.AofHandler
 }
 
-// NewDatabases 初始化数据库和分库以及处理指令文件记录的处理器
-func NewDatabases() *Databases {
-	databases := &Databases{}
+// MakeStandaloneDatabases 初始化数据库和分库以及处理指令文件记录的处理器
+func MakeStandaloneDatabases() *StandaloneDatabase {
+	databases := &StandaloneDatabase{}
 	if config.Properties.Databases == 0 {
 		config.Properties.Databases = 16
 	}
-	databases.dbSet = make([]*Database, config.Properties.Databases)
+	databases.dbSet = make([]*DB, config.Properties.Databases)
 	for i := range databases.dbSet {
-		database := MakeDatabase()
+		database := MakeDB()
 		database.index = i
 		databases.dbSet[i] = database
 	}
@@ -45,7 +45,7 @@ func NewDatabases() *Databases {
 	return databases
 }
 
-func (db *Databases) Exec(client resp.Connection, args CmdLine) resp.Reply {
+func (db *StandaloneDatabase) Exec(client resp.Connection, args CmdLine) resp.Reply {
 	defer func() {
 		if err := recover(); err != nil {
 			logger.Error(err)
@@ -63,16 +63,16 @@ func (db *Databases) Exec(client resp.Connection, args CmdLine) resp.Reply {
 	return database.Execute(client, args)
 }
 
-func (db *Databases) Close() {
-	logger.Info("Database closed")
+func (db *StandaloneDatabase) Close() {
+	logger.Info("DB closed")
 }
 
-func (db *Databases) AfterClientClose(conn resp.Connection) {
+func (db *StandaloneDatabase) AfterClientClose(conn resp.Connection) {
 	logger.Info("After client close, free some memory")
 }
 
 // executeSelect 执行选择数据库指令
-func executeSelect(conn resp.Connection, databases *Databases, args [][]byte) resp.Reply {
+func executeSelect(conn resp.Connection, databases *StandaloneDatabase, args [][]byte) resp.Reply {
 	dbIndex, err := strconv.Atoi(string(args[0]))
 	if err != nil {
 		return reply.MakeErrReply("ERR invalid database index")

@@ -18,7 +18,7 @@ func (e *EchoDatabase) Exec(client resp.Connection, cmd [][]byte) resp.Reply {
 }
 
 func (e *EchoDatabase) Close() {
-	logger.Info("Database closed")
+	logger.Info("DB closed")
 }
 
 func (e *EchoDatabase) AfterClientClose(conn resp.Connection) {

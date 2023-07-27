@@ -20,3 +20,29 @@
 - 内存数据库
 - Redis持久化
 - Redis集群（待定）
+
+#### 指令
+
+- keys
+
+```keys```
+```exists```
+```del```
+```type```
+```rename```
+```renamenx```
+```flush```
+
+- strings
+
+```get```
+```set```
+```getset```
+```strlen```
+```setnx```
+
+- common
+
+```ping```
+```exit```
+

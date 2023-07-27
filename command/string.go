@@ -21,7 +21,7 @@ func init() {
 }
 
 // executeGet 执行获取一个键对应的value
-func executeGet(db *database.Database, args [][]byte) resp.Reply {
+func executeGet(db *database.DB, args [][]byte) resp.Reply {
 	key := string(args[0])
 	entity, exists := db.GetEntity(key)
 	if !exists {
@@ -32,7 +32,7 @@ func executeGet(db *database.Database, args [][]byte) resp.Reply {
 }
 
 // executeGet 执行获取一个键对应的value
-func executeSet(db *database.Database, args [][]byte) resp.Reply {
+func executeSet(db *database.DB, args [][]byte) resp.Reply {
 	key := string(args[0])
 	val := args[1]
 	entity := &dbInterface.DataEntity{
@@ -44,7 +44,7 @@ func executeSet(db *database.Database, args [][]byte) resp.Reply {
 }
 
 // executeSetnx 如果对应的key不存在，执行获取一个键对应的value
-func executeSetnx(db *database.Database, args [][]byte) resp.Reply {
+func executeSetnx(db *database.DB, args [][]byte) resp.Reply {
 	key := string(args[0])
 	val := args[1]
 	entity := &dbInterface.DataEntity{
@@ -56,7 +56,7 @@ func executeSetnx(db *database.Database, args [][]byte) resp.Reply {
 }
 
 // executeGetAndSet 获取key对应的value，并设置为新的值，返回旧的值
-func executeGetAndSet(db *database.Database, args [][]byte) resp.Reply {
+func executeGetAndSet(db *database.DB, args [][]byte) resp.Reply {
 	key := string(args[0])
 	val := args[1]
 	entity, exist := db.GetEntity(key)
@@ -71,7 +71,7 @@ func executeGetAndSet(db *database.Database, args [][]byte) resp.Reply {
 }
 
 // executeStrLen 获取一个key对应val的长度
-func executeStrLen(db *database.Database, args [][]byte) resp.Reply {
+func executeStrLen(db *database.DB, args [][]byte) resp.Reply {
 	key := string(args[0])
 	entity, exists := db.GetEntity(key)
 	if !exists {

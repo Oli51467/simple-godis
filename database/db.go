@@ -11,19 +11,19 @@ import (
 
 type CmdLine = [][]byte
 
-// Database 一个子数据库 实现了smap.Map接口
-type Database struct {
+// DB 一个子数据库 实现了smap.Map接口
+type DB struct {
 	index  int
 	Data   smap.Map
 	AddAof func(line CmdLine) // 分数据库落盘不需要知道落盘处理器的全部细节，只需要一个方法
 }
 
 // ExecuteCommand 所有redis指令都要使用该函数执行
-type ExecuteCommand func(db *Database, args [][]byte) resp.Reply
+type ExecuteCommand func(db *DB, args [][]byte) resp.Reply
 
-// MakeDatabase 构建一个数据库
-func MakeDatabase() *Database {
-	db := &Database{
+// MakeDB 构建一个数据库
+func MakeDB() *DB {
+	db := &DB{
 		Data:   smap.MakeSyncMap(),
 		AddAof: func(line CmdLine) {},
 	}
@@ -31,7 +31,7 @@ func MakeDatabase() *Database {
 }
 
 // Execute 执行指令 conn 一个对应的连接 cmdLine 具体的指令[][]byte
-func (db *Database) Execute(conn resp.Connection, cmdLine CmdLine) resp.Reply {
+func (db *DB) Execute(conn resp.Connection, cmdLine CmdLine) resp.Reply {
 	// 统一将指令转为小写
 	cmdName := strings.ToLower(string(cmdLine[0]))
 	cmd, ok := commandTable[cmdName]
@@ -64,7 +64,7 @@ func validateArity(arity int, commandArgs [][]byte) bool {
 }
 
 // GetEntity 从该索引的数据库中拿一个key对应的DataEntity return: DataEntity, 是否拿到
-func (db *Database) GetEntity(key string) (*dbInterface.DataEntity, bool) {
+func (db *DB) GetEntity(key string) (*dbInterface.DataEntity, bool) {
 	raw, ok := db.Data.Get(key) // Get返回的是空接口 需要转换为DataEntity
 	if !ok {
 		return nil, false
@@ -74,29 +74,29 @@ func (db *Database) GetEntity(key string) (*dbInterface.DataEntity, bool) {
 }
 
 // PutEntity 从该索引的数据库中放入一个key对应的DataEntity
-func (db *Database) PutEntity(key string, entity *dbInterface.DataEntity) int {
+func (db *DB) PutEntity(key string, entity *dbInterface.DataEntity) int {
 	return db.Data.Put(key, entity)
 }
 
 // PutEntityIfExists 如果key在该索引对应的数据库中存在，
 // 从该索引的数据库中放入一个key对应的DataEntity
-func (db *Database) PutEntityIfExists(key string, entity *dbInterface.DataEntity) int {
+func (db *DB) PutEntityIfExists(key string, entity *dbInterface.DataEntity) int {
 	return db.Data.PutIfExists(key, entity)
 }
 
 // PutEntityIfAbsent 如果key在该索引对应的数据库中不存在，
 // 从该索引的数据库中放入一个key对应的DataEntity
-func (db *Database) PutEntityIfAbsent(key string, entity *dbInterface.DataEntity) int {
+func (db *DB) PutEntityIfAbsent(key string, entity *dbInterface.DataEntity) int {
 	return db.Data.PutIfAbsent(key, entity)
 }
 
 // RemoveEntity 从该索引的数据库中删除一个key对应的DataEntity
-func (db *Database) RemoveEntity(key string) {
+func (db *DB) RemoveEntity(key string) {
 	db.Data.Remove(key)
 }
 
 // RemoveEntities 从该索引的数据库中删除一个或多个key对应的DataEntity
-func (db *Database) RemoveEntities(keys ...string) (deleted int) {
+func (db *DB) RemoveEntities(keys ...string) (deleted int) {
 	deleted = 0
 	for _, key := range keys {
 		deleted += db.Data.Remove(key)
@@ -105,6 +105,6 @@ func (db *Database) RemoveEntities(keys ...string) (deleted int) {
 }
 
 // FlushKeys 从该索引的数据库中删除所有key
-func (db *Database) FlushKeys() {
+func (db *DB) FlushKeys() {
 	db.Data.Clear()
 }

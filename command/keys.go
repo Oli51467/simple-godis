@@ -23,7 +23,7 @@ func init() {
 }
 
 // executeDel 执行删除keys方法
-func executeDel(db *database.Database, args [][]byte) resp.Reply {
+func executeDel(db *database.DB, args [][]byte) resp.Reply {
 	keys := make([]string, len(args))
 	for i, v := range args {
 		keys[i] = string(v)
@@ -36,7 +36,7 @@ func executeDel(db *database.Database, args [][]byte) resp.Reply {
 }
 
 // executeDel 给定一个或多个key，判读在指定数据库中key是否存在
-func executeExists(db *database.Database, args [][]byte) resp.Reply {
+func executeExists(db *database.DB, args [][]byte) resp.Reply {
 	result := int64(0)
 	for _, arg := range args {
 		key := string(arg)
@@ -49,14 +49,14 @@ func executeExists(db *database.Database, args [][]byte) resp.Reply {
 }
 
 // executeFlush 在指定数据库中删除所有key
-func executeFlush(db *database.Database, args [][]byte) resp.Reply {
+func executeFlush(db *database.DB, args [][]byte) resp.Reply {
 	db.FlushKeys()
 	db.AddAof(utils.ToCmdLine2("flush", args...))
 	return reply.MakeOkReply()
 }
 
 // executeType 给定一个key 返回key对应value的类型
-func executeType(db *database.Database, args [][]byte) resp.Reply {
+func executeType(db *database.DB, args [][]byte) resp.Reply {
 	// 第一个参数就是key
 	key := string(args[0])
 	entity, exists := db.GetEntity(key)
@@ -72,7 +72,7 @@ func executeType(db *database.Database, args [][]byte) resp.Reply {
 }
 
 // executeRename 键的重命名 rename key1 key2 执行会覆盖key2
-func executeRename(db *database.Database, args [][]byte) resp.Reply {
+func executeRename(db *database.DB, args [][]byte) resp.Reply {
 	srcKey := string(args[0])
 	destKey := string(args[1])
 	entity, exists := db.GetEntity(srcKey)
@@ -86,7 +86,7 @@ func executeRename(db *database.Database, args [][]byte) resp.Reply {
 }
 
 // executeRenameNx 键的重命名 rename key1 key2 执行会检查key2是否存在
-func executeRenameNx(db *database.Database, args [][]byte) resp.Reply {
+func executeRenameNx(db *database.DB, args [][]byte) resp.Reply {
 	srcKey := string(args[0])
 	destKey := string(args[1])
 	_, ok := db.GetEntity(destKey)
@@ -104,7 +104,7 @@ func executeRenameNx(db *database.Database, args [][]byte) resp.Reply {
 }
 
 // executeKeys 返回所有的key
-func executeKeys(db *database.Database, args [][]byte) resp.Reply {
+func executeKeys(db *database.DB, args [][]byte) resp.Reply {
 	pattern := wildcard.CompilePattern(string(args[0]))
 	result := make([][]byte, 0)
 	db.Data.ForEach(func(key string, val interface{}) bool {

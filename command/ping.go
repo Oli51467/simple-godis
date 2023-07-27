@@ -7,7 +7,7 @@ import (
 )
 
 // Ping 指令的ExecuteCommand方法
-func Ping(db *database.Database, args [][]byte) resp.Reply {
+func Ping(db *database.DB, args [][]byte) resp.Reply {
 	return reply.MakePongReply()
 }
 

@@ -40,7 +40,7 @@ type ArgsNumErrReply struct {
 
 // Error ArgsNumErrReply实现reply.ErrorReply接口的Error方法
 func (err *ArgsNumErrReply) Error() string {
-	return "ERR wrong number of arguments for '" + err.Cmd + "' command"
+	return "-ERR wrong number of arguments for '" + err.Cmd + "' command"
 }
 
 // ToBytes ArgsNumErrReply实现reply.ErrorReply接口的ToBytes方法
