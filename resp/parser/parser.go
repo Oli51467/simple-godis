@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"io"
 	"runtime/debug"
@@ -238,15 +239,8 @@ func parseSingleLineReply(msg []byte) (resp.Reply, error) {
 		result = reply.MakeIntReply(val)
 	default:
 		// 当作文本协议解析
-		strs := strings.Split(str, " ")
-		if len(strs) == 0 {
-			return nil, errors.New("Protocol error " + string(msg))
-		}
-		args := make([][]byte, len(strs))
-		for i, s := range strs {
-			strings.TrimSpace(s)
-			args[i] = []byte(s)
-		}
+		msg = bytes.TrimSuffix(msg, []byte{'\r', '\n'})
+		args := bytes.Split(msg, []byte{' '})
 		result = reply.MakeMultiBulkReply(args)
 	}
 	return result, nil
