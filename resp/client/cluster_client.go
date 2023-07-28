@@ -81,14 +81,14 @@ func (client *ClusterClient) Close() {
 }
 
 func (client *ClusterClient) handleConnectionError(err error) error {
-	err1 := client.conn.Close()
-	if err1 != nil {
-		if opErr, ok := err1.(*net.OpError); ok {
+	err = client.conn.Close()
+	if err != nil {
+		if opErr, ok := err.(*net.OpError); ok {
 			if opErr.Err.Error() != "use of closed network connection" {
-				return err1
+				return err
 			}
 		} else {
-			return err1
+			return err
 		}
 	}
 	conn, err1 := net.Dial("tcp", client.addr)

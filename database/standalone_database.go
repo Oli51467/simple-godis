@@ -19,7 +19,7 @@ type StandaloneDatabase struct {
 func MakeStandaloneDatabases() *StandaloneDatabase {
 	databases := &StandaloneDatabase{}
 	if config.Properties.Databases == 0 {
-		config.Properties.Databases = 16
+		config.Properties.Databases = 8
 	}
 	databases.dbSet = make([]*DB, config.Properties.Databases)
 	for i := range databases.dbSet {
