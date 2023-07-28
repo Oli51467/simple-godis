@@ -1,9 +1,9 @@
-package database
+package clus
 
 import (
 	"context"
 	pool "github.com/jolestar/go-commons-pool/v2"
-	"simple-godis/cluster/factory"
+	"simple-godis/clus/factory"
 	"simple-godis/config"
 	"simple-godis/database"
 	dbInterface "simple-godis/interface/database"
@@ -12,6 +12,7 @@ import (
 	"simple-godis/resp/reply"
 )
 
+// ClusterDatabase 集群模式数据库 数据有三种执行模式 单节点返回、转发、群发
 type ClusterDatabase struct {
 	self           string   // 记录自己的节点
 	nodes          []string // 记录集群中所有的节点
@@ -44,14 +45,14 @@ func MakeClusterDatabase() *ClusterDatabase {
 	return cluster
 }
 
-func (c *ClusterDatabase) Exec(client resp.Connection, cmd dbInterface.CmdLine) resp.Reply {
+func (cluster *ClusterDatabase) Exec(client resp.Connection, cmd dbInterface.CmdLine) resp.Reply {
 	return reply.MakeOkReply()
 }
 
-func (c *ClusterDatabase) Close() {
+func (cluster *ClusterDatabase) Close() {
 
 }
 
-func (c *ClusterDatabase) AfterClientClose(conn resp.Connection) {
+func (cluster *ClusterDatabase) AfterClientClose(conn resp.Connection) {
 
 }
