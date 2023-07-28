@@ -72,9 +72,9 @@ func (reply *MultiBulkReply) ToBytes() []byte {
 }
 
 func (reply *MultiBulkReply) ToClient() []byte {
-	msgLen := len(reply.Msg)
+	//msgLen := len(reply.Msg)
 	var buf bytes.Buffer // 字符串拼接转bytes
-	buf.WriteString(strconv.Itoa(msgLen) + CRLF)
+	//buf.WriteString(strconv.Itoa(msgLen) + CRLF)
 	// 遍历每一个string
 	for _, lineMsg := range reply.Msg {
 		if lineMsg == nil {
