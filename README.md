@@ -46,3 +46,15 @@
 ```ping```
 ```exit```
 
+- set
+
+```sAdd```
+```sIsMember```
+```sRem```
+```sMembers```
+```sCard```
+```sInter```
+```sUnion```
+```sDiff```
+```sPop```
+

@@ -92,7 +92,7 @@ func (s *SyncMap) RandomKeys(limit int) []string {
 }
 
 func (s *SyncMap) RandomDistinctKeys(limit int) []string {
-	result := make([]string, s.Len())
+	result := make([]string, limit)
 	i := 0
 	s.m.Range(func(key, value interface{}) bool {
 		result[i] = key.(string)

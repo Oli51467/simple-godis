@@ -6,6 +6,7 @@ import (
 	"simple-godis/interface/resp"
 	"simple-godis/lib/utils"
 	"simple-godis/resp/reply"
+	"strconv"
 )
 
 func init() {
@@ -17,6 +18,7 @@ func init() {
 	database.RegisterCommand("sInter", executeSIntersection, -2)
 	database.RegisterCommand("sUnion", executeUnion, -2)
 	database.RegisterCommand("sDiff", executeDiff, -2)
+	database.RegisterCommand("sPop", executeSPop, -2)
 }
 
 // executeGet 执行获取一个键对应的value
@@ -164,6 +166,44 @@ func executeDiff(db *database.DB, args [][]byte) resp.Reply {
 	}
 	result := HashSet.Diff(sets...)
 	return set2reply(result)
+}
+
+// executeSPop 随机从集合中移除指定数量的元素 不指定就是1个
+func executeSPop(db *database.DB, args [][]byte) resp.Reply {
+	if len(args) != 1 && len(args) != 2 {
+		return reply.MakeErrReply("ERR wrong number of arguments for sPop command")
+	}
+	key := string(args[0])
+
+	// 拿到对应的数据库
+	set, errReply := db.GetAsSet(key)
+	if errReply != nil {
+		return errReply
+	}
+	if set == nil {
+		return reply.MakeNullBulkReply()
+	}
+	count := 1
+	if len(args) == 2 {
+		count64, err := strconv.ParseInt(string(args[1]), 10, 64)
+		if err != nil || count64 <= 0 {
+			return reply.MakeErrReply("ERR value is out of range, must be positive")
+		}
+		count = int(count64)
+	}
+	if count > set.Len() {
+		count = set.Len()
+	}
+	members := set.RandomDistinctMembers(count) // 随机取出count个集合内的元素
+	result := make([][]byte, len(members))
+	for i, val := range members {
+		set.Remove(val)
+		result[i] = []byte(val)
+	}
+	if count > 0 {
+		db.AddAof(utils.ToCmdLine3("sPop", args...))
+	}
+	return reply.MakeMultiBulkReply(result)
 }
 
 // set2reply 将一个set转成二维字节数组的reply

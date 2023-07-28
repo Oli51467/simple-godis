@@ -138,3 +138,16 @@ func (set Set) ShallowCopy() *Set {
 	})
 	return result
 }
+
+// RandomMembers 随机返回给定数量的键，可能包含重复的键
+func (set *Set) RandomMembers(limit int) []string {
+	if set == nil || set.s == nil {
+		return nil
+	}
+	return set.s.RandomKeys(limit)
+}
+
+// RandomDistinctMembers 随机返回给定数量的键，不会包含重复的键
+func (set *Set) RandomDistinctMembers(limit int) []string {
+	return set.s.RandomDistinctKeys(limit)
+}
