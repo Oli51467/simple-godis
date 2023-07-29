@@ -2,14 +2,18 @@ package clus
 
 import (
 	"context"
+	"fmt"
 	pool "github.com/jolestar/go-commons-pool/v2"
+	"runtime/debug"
 	"simple-godis/clus/factory"
 	"simple-godis/config"
 	"simple-godis/database"
 	dbInterface "simple-godis/interface/database"
 	"simple-godis/interface/resp"
 	"simple-godis/lib/consistenthashing"
+	"simple-godis/lib/logger"
 	"simple-godis/resp/reply"
+	"strings"
 )
 
 // ClusterDatabase 集群模式数据库 数据有三种执行模式 单节点返回、转发、群发
@@ -39,20 +43,38 @@ func MakeClusterDatabase() *ClusterDatabase {
 	ctx := context.Background()
 	// 初始化该节点与其他各个节点之间的连接池
 	for _, peer := range config.Properties.Peers {
-		pool.NewObjectPoolWithDefaultConfig(ctx, &factory.ConnectionFactory{Peer: peer})
+		cluster.peerConnection[peer] = pool.NewObjectPoolWithDefaultConfig(ctx, &factory.ConnectionFactory{
+			Peer: peer,
+		})
 	}
 	cluster.nodes = nodes
 	return cluster
 }
 
-func (cluster *ClusterDatabase) Exec(client resp.Connection, cmd dbInterface.CmdLine) resp.Reply {
-	return reply.MakeOkReply()
+var router = makeRouter()
+
+func (cluster *ClusterDatabase) Exec(client resp.Connection, cmdLine dbInterface.CmdLine) (result resp.Reply) {
+	defer func() {
+		if err := recover(); err != nil {
+			logger.Warn(fmt.Sprintf("error occurs: %v\n%s", err, string(debug.Stack())))
+			result = &reply.UnknownErrReply{}
+		}
+	}()
+	cmdName := strings.ToLower(string(cmdLine[0]))
+	cmdFunc, ok := router[cmdName]
+	if !ok {
+		return reply.MakeErrReply("ERR unknown command '" + cmdName + "', or not supported in cluster mode")
+	}
+	result = cmdFunc(cluster, client, cmdLine)
+	return
 }
 
+// Close 关闭单节点的数据库
 func (cluster *ClusterDatabase) Close() {
-
+	cluster.db.Close()
 }
 
+// AfterClientClose 单节点数据库关闭后执行的操作
 func (cluster *ClusterDatabase) AfterClientClose(conn resp.Connection) {
-
+	cluster.db.AfterClientClose(conn)
 }

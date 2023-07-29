@@ -4,6 +4,8 @@ import (
 	"context"
 	"io"
 	"net"
+	"simple-godis/clus"
+	"simple-godis/config"
 	"simple-godis/database"
 	dbInterface "simple-godis/interface/database"
 	"simple-godis/lib/logger"
@@ -23,7 +25,13 @@ type RespHandler struct {
 }
 
 func MakeRespHandler() *RespHandler {
-	db := database.MakeStandaloneDatabases()
+	var db dbInterface.Database
+	// 如果是集群模式 则建立集群数据库
+	if config.Properties.Self != "" && len(config.Properties.Peers) > 0 {
+		db = clus.MakeClusterDatabase()
+	} else { // 否则建立单机数据库
+		db = database.MakeStandaloneDatabases()
+	}
 	return &RespHandler{
 		db: db,
 	}
