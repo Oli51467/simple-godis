@@ -40,6 +40,10 @@
 ```getset```
 ```strlen```
 ```setnx```
+```getdel```
+```append```
+```incr```
+```decr```
 
 - common
 

@@ -6,6 +6,7 @@ import (
 	"simple-godis/interface/resp"
 	"simple-godis/lib/utils"
 	"simple-godis/resp/reply"
+	"strconv"
 )
 
 /*
@@ -19,6 +20,9 @@ func init() {
 	database.RegisterCommand("getset", executeGetAndSet, 3)
 	database.RegisterCommand("strlen", executeStrLen, 2)
 	database.RegisterCommand("append", executeAppend, 3)
+	database.RegisterCommand("getDel", executeGetAndDel, 2)
+	database.RegisterCommand("incr", executeIncr, -2)
+	database.RegisterCommand("decr", executeDecr, -2)
 }
 
 // executeGet 执行获取一个键对应的value
@@ -102,4 +106,94 @@ func executeAppend(db *database.DB, args [][]byte) resp.Reply {
 	})
 	db.AddAof(utils.ToCmdLine3("append", args...))
 	return reply.MakeIntReply(int64(len(bytes)))
+}
+
+// executeGetAndDel 通过key拿到一个value然后再删除
+func executeGetAndDel(db *database.DB, args [][]byte) resp.Reply {
+	key := string(args[0])
+	val, err := db.GetAsString(key)
+	if err != nil {
+		return err
+	}
+	if val == nil {
+		return reply.MakeNullBulkReply()
+	}
+	db.RemoveEntity(key)
+	db.AddAof(utils.ToCmdLine3("del", args...))
+	return reply.MakeBulkReply(val)
+}
+
+// executeIncr 如果value是int类型 则将value的值增加指定的值 如果不指定 则增加1
+func executeIncr(db *database.DB, args [][]byte) resp.Reply {
+	key := string(args[0])
+
+	bytes, err := db.GetAsString(key)
+	if err != nil {
+		return err
+	}
+	if bytes != nil {
+		val, err := strconv.ParseInt(string(bytes), 10, 64)
+		if err != nil {
+			return reply.MakeErrReply("ERR value is not an integer or out of range")
+		}
+		var increment int64
+		// 如果制定了增量的值 则尝试将增量的值转为Int 如果转化失败 则抛出异常
+		if len(args) > 1 && args[1] != nil {
+			increment, err = strconv.ParseInt(string(args[1]), 10, 64)
+			if err != nil {
+				return reply.MakeErrReply("ERR the increment argument is NaN")
+			}
+		} else {
+			increment = 1
+		}
+		db.PutEntity(key, &dbInterface.DataEntity{
+			Data: []byte(strconv.FormatInt(val+increment, 10)),
+		})
+		db.AddAof(utils.ToCmdLine3("incr", args...))
+		return reply.MakeIntReply(val + increment)
+	} else {
+		db.PutEntity(key, &dbInterface.DataEntity{
+			Data: []byte("1"),
+		})
+		db.AddAof(utils.ToCmdLine3("incr", args...))
+		return reply.MakeIntReply(1)
+	}
+}
+
+// executeDecr 如果value是int类型 则将value的值减少指定的值 如果不指定 则减少1
+func executeDecr(db *database.DB, args [][]byte) resp.Reply {
+	key := string(args[0])
+
+	bytes, err := db.GetAsString(key)
+	if err != nil {
+		return err
+	}
+	if bytes != nil {
+		val, err := strconv.ParseInt(string(bytes), 10, 64)
+		if err != nil {
+			return reply.MakeErrReply("ERR value is not an integer or out of range")
+		}
+		var decrement int64
+		// 如果制定了减量的值 则尝试将减量的值转为Int 如果转化失败 则抛出异常
+		if len(args) > 1 && args[1] != nil {
+			decrement, err = strconv.ParseInt(string(args[1]), 10, 64)
+			if err != nil {
+				return reply.MakeErrReply("ERR the increment argument is NaN")
+			}
+		} else {
+			decrement = 1
+		}
+		db.PutEntity(key, &dbInterface.DataEntity{
+			Data: []byte(strconv.FormatInt(val-decrement, 10)),
+		})
+		// 落盘
+		db.AddAof(utils.ToCmdLine3("decr", args...))
+		return reply.MakeIntReply(val - decrement)
+	} else {
+		db.PutEntity(key, &dbInterface.DataEntity{
+			Data: []byte("-1"),
+		})
+		db.AddAof(utils.ToCmdLine3("decr", args...))
+		return reply.MakeIntReply(-1)
+	}
 }

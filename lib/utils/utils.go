@@ -1,5 +1,7 @@
 package utils
 
+import "unicode"
+
 // ToCmdLine convert strings to [][]byte
 func ToCmdLine(cmd ...string) [][]byte {
 	args := make([][]byte, len(cmd))
@@ -42,6 +44,15 @@ func BytesEquals(a []byte, b []byte) bool {
 		av := a[i]
 		bv := b[i]
 		if av != bv {
+			return false
+		}
+	}
+	return true
+}
+
+func IsDigit(str string) bool {
+	for _, x := range []rune(str) {
+		if !unicode.IsDigit(x) {
 			return false
 		}
 	}
