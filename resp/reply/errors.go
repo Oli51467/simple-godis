@@ -9,6 +9,7 @@ var wrongTypeErrBytes = []byte("-Wrong type operation against a key holding the 
 
 var theSyntaxErrReply = &SyntaxErrReply{}
 var theUnknownErrReply = &UnknownErrReply{}
+var theWrongTypeReply = &WrongTypeErrReply{}
 
 // UnknownErrReply 一类未知错误的抽象 实现了reply.ErrorReply接口
 type UnknownErrReply struct {
@@ -83,6 +84,11 @@ func (err *SyntaxErrReply) Error() string {
 
 // WrongTypeErrReply key/value类型错误的抽象 实现了reply.ErrorReply接口
 type WrongTypeErrReply struct{}
+
+// MakeWrongTypeReply MakeWrongTypeReply的构造方法
+func MakeWrongTypeReply() *WrongTypeErrReply {
+	return theWrongTypeReply
+}
 
 // ToBytes WrongTypeErrReply实现reply.ErrorReply接口的ToBytes方法
 func (err *WrongTypeErrReply) ToBytes() []byte {

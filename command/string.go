@@ -18,6 +18,7 @@ func init() {
 	database.RegisterCommand("setnx", executeSetnx, 3)
 	database.RegisterCommand("getset", executeGetAndSet, 3)
 	database.RegisterCommand("strlen", executeStrLen, 2)
+	database.RegisterCommand("append", executeAppend, 3)
 }
 
 // executeGet 执行获取一个键对应的value
@@ -64,24 +65,41 @@ func executeSetnx(db *database.DB, args [][]byte) resp.Reply {
 func executeGetAndSet(db *database.DB, args [][]byte) resp.Reply {
 	key := string(args[0])
 	val := args[1]
-	entity, exist := db.GetEntity(key)
+	entity, err := db.GetAsString(key)
+	if err != nil {
+		return err
+	}
 	db.PutEntity(key, &dbInterface.DataEntity{
 		Data: val,
 	})
-	if !exist {
-		return reply.MakeNullBulkReply()
-	}
 	db.AddAof(utils.ToCmdLine2("getset", args...))
-	return reply.MakeBulkReply(entity.Data.([]byte))
+	return reply.MakeBulkReply(entity)
 }
 
 // executeStrLen 获取一个key对应val的长度
 func executeStrLen(db *database.DB, args [][]byte) resp.Reply {
 	key := string(args[0])
-	entity, exists := db.GetEntity(key)
-	if !exists {
-		return reply.MakeNullBulkReply()
+	bytes, err := db.GetAsString(key)
+	if err != nil {
+		return err
 	}
-	bytes := entity.Data.([]byte)
+	if bytes == nil {
+		return reply.MakeIntReply(0)
+	}
+	return reply.MakeIntReply(int64(len(bytes)))
+}
+
+// executeAppend 向某个value为字符串的key追加元素
+func executeAppend(db *database.DB, args [][]byte) resp.Reply {
+	key := string(args[0])
+	bytes, err := db.GetAsString(key)
+	if err != nil {
+		return err
+	}
+	bytes = append(bytes, args[1]...)
+	db.PutEntity(key, &dbInterface.DataEntity{
+		Data: bytes,
+	})
+	db.AddAof(utils.ToCmdLine3("append", args...))
 	return reply.MakeIntReply(int64(len(bytes)))
 }
