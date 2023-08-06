@@ -10,8 +10,8 @@ type QuickList struct {
 	size int
 }
 
-// iterator QuickList的迭代器
-type iterator struct {
+// locator QuickList的定位器
+type locator struct {
 	node   *list.Element
 	offset int
 	ql     *QuickList
@@ -51,7 +51,7 @@ func (ql *QuickList) Add(val interface{}) {
 }
 
 // find 根据一个指定的index，返回该index所在的zipList(page)以及页内偏移
-func (ql *QuickList) find(index int) *iterator {
+func (ql *QuickList) find(index int) *locator {
 	if ql == nil {
 		panic("quickList is nil")
 	}
@@ -91,42 +91,115 @@ func (ql *QuickList) find(index int) *iterator {
 	}
 	// 用所要找的索引减去在它之前页的总元素数 就是所要找的结点在页内的偏移
 	pageOffset := index - totalElementCount
-	return &iterator{
+	return &locator{
 		node:   node,
 		offset: pageOffset,
 		ql:     ql,
 	}
 }
 
-// get 根据迭代器中记录的offset和所在页拿到指定的Element
-func (iter *iterator) get() interface{} {
-	return iter.page()[iter.offset]
+// get 根据定位器中记录的offset和所在页拿到指定的Element
+func (locator *locator) get() interface{} {
+	return locator.page()[locator.offset]
 }
 
-// page 返回QuickList迭代器所在的QuickNode结点的zipList[]interface{}
-func (iter *iterator) page() []interface{} {
-	return iter.node.Value.([]interface{})
+// page 返回QuickList定位器所在的QuickNode结点的zipList[]interface{}
+func (locator *locator) page() []interface{} {
+	return locator.node.Value.([]interface{})
 }
 
 // Get 根据下标返回QuickList中对应的元素
 func (ql *QuickList) Get(index int) (val interface{}) {
-	iter := ql.find(index)
-	return iter.get()
+	locator := ql.find(index)
+	return locator.get()
 }
 
+// set 根据定位器的记录 将QuickList指定位置的键设置为指定的值
+func (locator *locator) set(val interface{}) {
+	page := locator.page()
+	page[locator.offset] = val
+}
+
+// Set 将指定位置的值更新 指定位置应该在[0, list.size]之间
 func (ql *QuickList) Set(index int, val interface{}) {
-	//TODO implement me
-	panic("implement me")
+	locator := ql.find(index)
+	locator.set(val)
 }
 
+// Insert 将元素插入链表的指定位置
 func (ql *QuickList) Insert(index int, val interface{}) {
-	//TODO implement me
-	panic("implement me")
+	// 如果插入位置在链表尾部 则等同于在尾部新加一个元素
+	if index == ql.size {
+		ql.Add(val)
+		return
+	}
+	// 找到要插入的那一页
+	locator := ql.find(index)
+	page := locator.node.Value.([]interface{})
+	// 如果这一页还有容量可以添加
+	if len(page) < pageSize {
+		// 将这一页中要插入位置后面的元素往后移动一位 从offset+1位置起，依次追加offset以及后面的元素
+		page = append(page[:locator.offset+1], page[locator.offset:]...)
+		page[locator.offset] = val
+		// 更新该元素所在的page
+		locator.node.Value = page
+		ql.size++
+		return
+	}
+	// 这一页已经满了 插入整页可能会引起内存复制，所以将整页拆分成两个半页
+	var nextPage []interface{}
+	nextPage = append(nextPage, page[pageSize/2:]...)
+	page = page[:pageSize/2]
+	// 要插入的位置在前半段
+	if locator.offset < len(page) {
+		page = append(page[:locator.offset+1], page[locator.offset:]...)
+		page[locator.offset] = val
+	} else {
+		// 要插入的位置在后半段
+		afterOffset := locator.offset - pageSize/2
+		nextPage = append(nextPage[:afterOffset+1], nextPage[afterOffset:]...)
+		nextPage[afterOffset] = val
+	}
+	// 更新该元素所在的page
+	locator.node.Value = page
+	ql.data.InsertAfter(nextPage, locator.node)
+	ql.size++
 }
 
+// remove 移除定位器中的元素
+func (locator *locator) remove() interface{} {
+	page := locator.page()
+	val := page[locator.offset]
+	// 将要删除的元素移除 从第offset+1个位置开始往前移动一个位置
+	page = append(page[:locator.offset], page[locator.offset+1:]...)
+	if len(page) > 0 {
+		locator.node.Value = page
+		if locator.offset == len(page) {
+			if locator.node != locator.ql.data.Back() {
+				locator.node = locator.node.Next()
+				locator.offset = 0
+			}
+		}
+	} else {
+		if locator.node == locator.ql.data.Back() {
+			locator.ql.data.Remove(locator.node)
+			locator.node = nil
+			locator.offset = 0
+		} else {
+			nextNode := locator.node.Next()
+			locator.ql.data.Remove(locator.node)
+			locator.node = nextNode
+			locator.offset = 0
+		}
+	}
+	locator.ql.size--
+	return val
+}
+
+// Remove 移除指定位置的元素
 func (ql *QuickList) Remove(index int) (val interface{}) {
-	//TODO implement me
-	panic("implement me")
+	locator := ql.find(index)
+	return locator.remove()
 }
 
 func (ql *QuickList) RemoveLast() (val interface{}) {
@@ -144,9 +217,9 @@ func (ql *QuickList) RemoveByVal(expected Expected, count int) int {
 	panic("implement me")
 }
 
+// Len 返回列表的长度
 func (ql *QuickList) Len() int {
-	//TODO implement me
-	panic("implement me")
+	return ql.size
 }
 
 func (ql *QuickList) ForEach(consumer Consumer) {
