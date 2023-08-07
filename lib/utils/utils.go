@@ -2,7 +2,7 @@ package utils
 
 import "unicode"
 
-// ToCmdLine convert strings to [][]byte
+// ToCmdLine 将字符串转化为二维字节数组
 func ToCmdLine(cmd ...string) [][]byte {
 	args := make([][]byte, len(cmd))
 	for i, s := range cmd {
@@ -11,7 +11,7 @@ func ToCmdLine(cmd ...string) [][]byte {
 	return args
 }
 
-// ToCmdLine2 convert commandName and []byte-type argument to CmdLine
+// ToCmdLine2 将给定的指令名和[]byte类型参数转换为CmdLine
 func ToCmdLine2(commandName string, args ...[]byte) [][]byte {
 	result := make([][]byte, len(args)+1)
 	result[0] = []byte(commandName)
@@ -21,7 +21,7 @@ func ToCmdLine2(commandName string, args ...[]byte) [][]byte {
 	return result
 }
 
-// ToCmdLine3 convert commandName and []byte-type argument to CmdLine
+// ToCmdLine3 将给定的指令名和[]byte类型参数转换为CmdLine
 func ToCmdLine3(commandName string, args ...[]byte) [][]byte {
 	result := make([][]byte, len(args)+1)
 	result[0] = []byte(commandName)
@@ -31,7 +31,17 @@ func ToCmdLine3(commandName string, args ...[]byte) [][]byte {
 	return result
 }
 
-// BytesEquals check whether the given bytes is equal
+// Equals 判断两个给定的值是否相等
+func Equals(a interface{}, b interface{}) bool {
+	sliceA, okA := a.([]byte)
+	sliceB, okB := b.([]byte)
+	if okA && okB {
+		return BytesEquals(sliceA, sliceB)
+	}
+	return a == b
+}
+
+// BytesEquals 检查给定的字节是否相等
 func BytesEquals(a []byte, b []byte) bool {
 	if (a == nil && b != nil) || (a != nil && b == nil) {
 		return false

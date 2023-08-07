@@ -329,7 +329,7 @@ func (ql *QuickList) Contains(expected Expected) bool {
 
 // Range 返回列表中下标从[start, end)的所有元素
 func (ql *QuickList) Range(start int, end int) []interface{} {
-	if start < 0 || start > ql.Len() {
+	if start < 0 || start >= ql.Len() {
 		panic("`start` index out of range")
 	}
 	if end < start || end > ql.Len() {
@@ -339,7 +339,7 @@ func (ql *QuickList) Range(start int, end int) []interface{} {
 	rangeElements := make([]interface{}, 0, sliceSize)
 	locator := ql.find(start)
 	i := 0
-	if i < sliceSize {
+	for i < sliceSize {
 		rangeElements = append(rangeElements, locator.get())
 		locator.next()
 		i++

@@ -33,6 +33,11 @@ func executeGet(db *database.DB, args [][]byte) resp.Reply {
 	if set != nil {
 		return executeSMembers(db, args)
 	}
+	list, _ := db.GetAsList(key)
+	// 判断要取的key是不是一个列表 如果是就改为查询列表内的所有元素
+	if list != nil {
+		return executeGetAsList(db, args)
+	}
 	entity, exists := db.GetEntity(key)
 	if !exists {
 		return reply.MakeNullBulkReply()

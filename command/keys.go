@@ -2,6 +2,8 @@ package command
 
 import (
 	"simple-godis/database"
+	List "simple-godis/datastructure/list"
+	"simple-godis/datastructure/set"
 	"simple-godis/interface/resp"
 	"simple-godis/lib/utils"
 	"simple-godis/lib/wildcard"
@@ -67,6 +69,10 @@ func executeType(db *database.DB, args [][]byte) resp.Reply {
 	switch entity.Data.(type) {
 	case []byte:
 		return reply.MakeStatusReply("string")
+	case List.List:
+		return reply.MakeStatusReply("list")
+	case set.Set:
+		return reply.MakeStatusReply("set")
 	}
 	return reply.MakeUnknownErrReply()
 }
