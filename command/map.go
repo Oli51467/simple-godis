@@ -15,6 +15,7 @@ func init() {
 	database.RegisterCommand("HExists", executeHExists, 3)
 	database.RegisterCommand("HMSet", executeHMSet, -3)
 	database.RegisterCommand("HMGet", executeHMGet, -3)
+	database.RegisterCommand("HMDel", executeHMDel, -3)
 	database.RegisterCommand("HKeys", executeHKeys, 2)
 	database.RegisterCommand("HValues", executeHValues, 2)
 	database.RegisterCommand("HGetAll", executeHGetAll, 2)
@@ -194,6 +195,30 @@ func executeHMSet(db *database.DB, args [][]byte) resp.Reply {
 	}
 	db.AddAof(utils.ToCmdLine3("HMSet", args...))
 	return reply.MakeOkReply()
+}
+
+// executeHMDel 在以key为键的实体中删除多个键值对
+func executeHMDel(db *database.DB, args [][]byte) resp.Reply {
+	key := string(args[0])
+	fieldsCount := len(args) - 1
+	fields := make([]string, fieldsCount)
+	for i := 0; i < fieldsCount; i++ {
+		fields[i] = string(args[i+1])
+	}
+	// 获取实体
+	iMap, errorReply := db.GetAsMap(key)
+	if errorReply != nil {
+		return errorReply
+	}
+	if iMap == nil {
+		return reply.MakeIntReply(0)
+	}
+	deletedCount := 0
+	for _, field := range fields {
+		deletedCount += iMap.Remove(field)
+	}
+	db.AddAof(utils.ToCmdLine3("HMDel", args...))
+	return reply.MakeIntReply(int64(deletedCount))
 }
 
 // executeHMGet 在以key为键的实体中获取多个以field为键的值

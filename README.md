@@ -85,6 +85,7 @@
 ```hexists```
 ```hmset```
 ```hmget```
+```hmdel```
 ```hkeys```
 ```hvalues```
 ```hgetall```
