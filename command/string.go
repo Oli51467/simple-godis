@@ -38,6 +38,11 @@ func executeGet(db *database.DB, args [][]byte) resp.Reply {
 	if list != nil {
 		return executeGetAsList(db, args)
 	}
+	// 判断要取的key是不是一个哈希表 如果是就改为查询哈希表内的所有元素
+	iMap, _ := db.GetAsMap(key)
+	if iMap != nil {
+		return executeHGetAll(db, args)
+	}
 	entity, exists := db.GetEntity(key)
 	if !exists {
 		return reply.MakeNullBulkReply()

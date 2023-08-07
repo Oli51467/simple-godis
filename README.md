@@ -19,11 +19,11 @@
 - Redis协议解析器
 - 内存数据库
 - Redis持久化
-- Redis集群（待定）
+- Redis集群
 
 #### 指令
 
-- keys
+- Keys
 
 ```keys```
 ```exists```
@@ -33,7 +33,7 @@
 ```renamenx```
 ```flush```
 
-- strings
+- Strings
 
 ```get```
 ```set```
@@ -45,12 +45,12 @@
 ```incr```
 ```decr```
 
-- common
+- Common
 
 ```ping```
 ```exit```
 
-- set
+- Set
 
 ```sAdd```
 ```sIsMember```
@@ -62,3 +62,31 @@
 ```sDiff```
 ```sPop```
 
+- List
+
+```lpush```
+```lpushx```
+```rpush```
+```rpushx```
+```lpop```
+```rpop```
+```lindex```
+```lset```
+```lrange```
+```lrem```
+```llen```
+
+- Hash
+
+```hset```
+```hsetnx```
+```hget```
+```hdel```
+```hexists```
+```hmset```
+```hmget```
+```hkeys```
+```hvalues```
+```hgetall```
+```hlen```
+```hstrlen```

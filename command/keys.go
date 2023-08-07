@@ -4,6 +4,7 @@ import (
 	"simple-godis/database"
 	List "simple-godis/datastructure/list"
 	"simple-godis/datastructure/set"
+	"simple-godis/datastructure/smap"
 	"simple-godis/interface/resp"
 	"simple-godis/lib/utils"
 	"simple-godis/lib/wildcard"
@@ -73,6 +74,8 @@ func executeType(db *database.DB, args [][]byte) resp.Reply {
 		return reply.MakeStatusReply("list")
 	case set.Set:
 		return reply.MakeStatusReply("set")
+	case smap.Map:
+		return reply.MakeStatusReply("hash")
 	}
 	return reply.MakeUnknownErrReply()
 }
