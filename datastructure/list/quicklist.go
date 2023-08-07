@@ -202,19 +202,89 @@ func (ql *QuickList) Remove(index int) (val interface{}) {
 	return locator.remove()
 }
 
+// RemoveLast 将列表中的最后一个元素移除 如果最后一页只有一个元素 则将最后一页也删除
 func (ql *QuickList) RemoveLast() (val interface{}) {
-	//TODO implement me
-	panic("implement me")
+	if ql.Len() == 0 {
+		return nil
+	}
+	ql.size--
+	lastNode := ql.data.Back()
+	lastPage := lastNode.Value.([]interface{})
+	if len(lastPage) == 1 {
+		ql.data.Remove(lastNode) // 将最后一整页删除
+		return lastPage[0]       // 返回最后一页的第一个元素
+	}
+	removeVal := lastPage[len(lastPage)-1]
+	lastPage = lastPage[:len(lastPage)-1]
+	lastNode.Value = lastPage
+	return removeVal
 }
 
+// atEnd 判断定位器是否已经在列表的尾部
+func (locator *locator) atEnd() bool {
+	if locator.ql.data.Len() == 0 {
+		return true
+	}
+	if locator.node != locator.ql.data.Back() {
+		return false
+	}
+	page := locator.page()
+	return locator.offset == len(page)
+}
+
+// next 将定位器移动到下一个位置
+func (locator *locator) next() bool {
+	page := locator.page()
+	if locator.offset < len(page)-1 {
+		locator.offset++
+		return true
+	}
+	// 已经移动到了最后一个元素
+	if locator.node == locator.ql.data.Back() {
+		locator.offset = len(page)
+		return false
+	}
+	// 移动到下一页
+	locator.offset = 0
+	locator.node = locator.node.Next()
+	return true
+}
+
+// RemoveAllByVal 移除列表中所有值为val的元素
 func (ql *QuickList) RemoveAllByVal(expected Expected) int {
-	//TODO implement me
-	panic("implement me")
+	locator := ql.find(0) // 从第一个元素开始找
+	removedCount := 0
+	for !locator.atEnd() {
+		// 如果定位器的所在的值等于给定元素的值，则删除定位器所在位置的元素
+		if expected(locator.get()) {
+			locator.remove()
+			removedCount++
+		} else {
+			locator.next() // 否则定位器移动到下一个位置
+		}
+	}
+	return removedCount
 }
 
+// RemoveByVal 从左到右扫描列表，移除该列表中的给定的值，并最多移除count个
 func (ql *QuickList) RemoveByVal(expected Expected, count int) int {
-	//TODO implement me
-	panic("implement me")
+	if ql.size == 0 {
+		return 0
+	}
+	locator := ql.find(0)
+	removedCount := 0
+	for !locator.atEnd() {
+		if expected(locator.get()) {
+			locator.remove()
+			removedCount++
+			if removedCount == count {
+				break
+			}
+		} else {
+			locator.next()
+		}
+	}
+	return removedCount
 }
 
 // Len 返回列表的长度
@@ -222,17 +292,57 @@ func (ql *QuickList) Len() int {
 	return ql.size
 }
 
+// ForEach 遍历列表的每一个元素，如果consumer返回false则终止遍历，否则一直遍历到列表尾部
 func (ql *QuickList) ForEach(consumer Consumer) {
-	//TODO implement me
-	panic("implement me")
+	if ql == nil {
+		panic("list is nil")
+	}
+	if ql.Len() == 0 {
+		return
+	}
+	locator := ql.find(0)
+	i := 0
+	for {
+		goOn := consumer(i, locator.get())
+		if !goOn {
+			break
+		}
+		i++
+		if !locator.next() {
+			break
+		}
+	}
 }
 
+// Contains 检查列表中是否包含指定元素
 func (ql *QuickList) Contains(expected Expected) bool {
-	//TODO implement me
-	panic("implement me")
+	contains := false
+	ql.ForEach(func(i int, valInList interface{}) bool {
+		if expected(valInList) {
+			contains = true
+			return false
+		}
+		return true
+	})
+	return contains
 }
 
+// Range 返回列表中下标从[start, end)的所有元素
 func (ql *QuickList) Range(start int, end int) []interface{} {
-	//TODO implement me
-	panic("implement me")
+	if start < 0 || start > ql.Len() {
+		panic("`start` index out of range")
+	}
+	if end < start || end > ql.Len() {
+		panic("`end` index out of range")
+	}
+	sliceSize := end - start
+	rangeElements := make([]interface{}, 0, sliceSize)
+	locator := ql.find(start)
+	i := 0
+	if i < sliceSize {
+		rangeElements = append(rangeElements, locator.get())
+		locator.next()
+		i++
+	}
+	return rangeElements
 }

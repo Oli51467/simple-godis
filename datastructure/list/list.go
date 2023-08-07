@@ -1,7 +1,7 @@
 package list
 
-// Consumer Map迭代器
-type Consumer func(key string, val interface{}) bool
+// Consumer List迭代器
+type Consumer func(i int, val interface{}) bool
 
 // Expected 抽象函数 检查给定的值是否等于期望的值
 type Expected func(a interface{}) bool
