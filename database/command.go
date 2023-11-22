@@ -1,12 +1,14 @@
 package database
 
-import "strings"
+import (
+	"strings"
+)
 
 /*
 每一个类型的指令对应一个执行方法command
 */
 
-var commandTable = make(map[string]*command)
+var CommandTable = make(map[string]*command)
 
 // command 一种类型的指令对应一个command
 type command struct {
@@ -18,7 +20,7 @@ type command struct {
 // 新建一个command放到commandTable中
 func RegisterCommand(name string, executor ExecuteCommand, arity int) {
 	name = strings.ToLower(name)
-	commandTable[name] = &command{
+	CommandTable[name] = &command{
 		executor: executor,
 		arity:    arity,
 	}

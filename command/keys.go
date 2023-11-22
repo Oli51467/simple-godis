@@ -21,7 +21,7 @@ func init() {
 	database.RegisterCommand("flush", executeFlush, -1)
 	database.RegisterCommand("type", executeType, 2)
 	database.RegisterCommand("rename", executeRename, 3)
-	database.RegisterCommand("renamenx", executeRenameNx, 3)
+	database.RegisterCommand("renameNx", executeRenameNx, 3)
 	database.RegisterCommand("keys", executeKeys, 2)
 }
 
@@ -108,7 +108,7 @@ func executeRenameNx(db *database.DB, args [][]byte) resp.Reply {
 	}
 	db.PutEntity(destKey, entity)
 	db.RemoveEntity(srcKey)
-	db.AddAof(utils.ToCmdLine2("renamenx", args...))
+	db.AddAof(utils.ToCmdLine2("renameNx", args...))
 	return reply.MakeIntReply(1)
 }
 

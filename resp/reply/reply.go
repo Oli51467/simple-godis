@@ -165,3 +165,35 @@ func MakeErrReply(status string) *StandardErrReply {
 func IsErrorReply(reply resp.Reply) bool {
 	return reply.ToBytes()[0] == '-'
 }
+
+type MultiRawReply struct {
+	Replies []resp.Reply
+}
+
+// MakeMultiRawReply MultiRawReply的构造方法
+func MakeMultiRawReply(replies []resp.Reply) *MultiRawReply {
+	return &MultiRawReply{
+		Replies: replies,
+	}
+}
+
+// ToBytes marshal redis.Reply
+func (r *MultiRawReply) ToBytes() []byte {
+	argLen := len(r.Replies)
+	var buf bytes.Buffer
+	buf.WriteString("*" + strconv.Itoa(argLen) + CRLF)
+	for _, arg := range r.Replies {
+		buf.Write(arg.ToBytes())
+	}
+	return buf.Bytes()
+}
+
+func (r *MultiRawReply) ToClient() []byte {
+	argLen := len(r.Replies)
+	var buf bytes.Buffer
+	buf.WriteString("*" + strconv.Itoa(argLen) + CRLF)
+	for _, arg := range r.Replies {
+		buf.Write(arg.ToBytes())
+	}
+	return buf.Bytes()
+}

@@ -34,7 +34,7 @@ func MakeDB() *DB {
 func (db *DB) Execute(conn resp.Connection, cmdLine CmdLine) resp.Reply {
 	// 统一将指令转为小写
 	cmdName := strings.ToLower(string(cmdLine[0]))
-	cmd, ok := commandTable[cmdName]
+	cmd, ok := CommandTable[cmdName]
 	if cmdName == "exit" {
 		err := conn.Close()
 		if err != nil {
